@@ -65,6 +65,8 @@ test('apply owns configuration and tool disposers and provides one service', () 
   assert.deepEqual(f.configured, [{ policy: { auto: false }, owner: f.ctx.fiber }]);
   assert.equal(typeof f.ctx.presetManager.snapshot, 'function');
   assert.equal(f.ctx.tool.name, 'preset_manager');
+  assert.match(f.ctx.tool.description, /Presets page integration is paused/);
+  assert.match(f.ctx.tool.parameters.properties.policy.description, /Preserve settingsOrder and hiddenSettings/);
   f.effects.slice().reverse().forEach((dispose) => dispose());
   assert.deepEqual(f.disposed, ['tool', 'settings']);
 });

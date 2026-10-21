@@ -1,5 +1,29 @@
 # 验证记录
 
+## 未发布修复 — 2026-10-21
+
+### 范围与原因
+
+用户确认仅修改插件，不改动 DSH。本次停止注册 settings.section#agent-presets，保留原生设置页；新对话的隐藏、排序仍使用原生选择器适配。管理面板移除暂停功能的控件，提供中英文说明。旧 settingsOrder、hiddenSettings 保留，保存及恢复新对话显示都不清空这两项。配置格式、插件版本及精确 DSH 兼容范围不变，属于尚未发布的修复提交。
+
+实际运行版本为 DSH 0.2.1-rc.2，既有兼容记录固定 commit 687f282e8625c6b8d11ff58211a90524be2e4317。已安装 ui-settings-general 的导航通过 slots.entries("settings.section") 投影所有注册，同 ID 的覆盖项和原生项因此都会出现在导航中。修改前 live Inspect 证实存在 priority -10 / 0 两条 agent-presets 注册。已有 Slot fixture 只验证覆盖生效，未验证导航对完整注册列表的投影，因此没有发现重复入口。
+
+独立只读审查核对了固定提交的 [SlotCore](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/packages/client/ui-slots/src/index.ts#L1245-L1251) 和 [renderer](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/packages/client/ui-renderer/src/client/scoped-slots.tsx#L577-L578)：第二次声明已有子插槽会报错，不声明 children 则不会取得 renderSlot。因此没有通过再次包装整个设置框架来绕过问题，也没有修改第三方对象或 DOM。
+
+### 本地回归
+
+新增测试直接加载本项目生成的客户端并执行 apply，按 rc.2 导航的全量注册投影复现问题：修改前得到两个 agent-presets，修复后仅保留原生一项。覆盖原生入口重载、卸载清理、中英文暂停说明、新对话控件、保存及重置时保留暂停字段；重置前的新对话独立顺序非空。测试使用 slots fixture 和 React 测试渲染器，是逻辑回归，不代表真实浏览器视觉验收。
+
+npm run check：构建、Host/Client 语法检查及 **38/38 测试通过**。新增测试最初在旧生成产物上 4/4 失败，已修复；中间一次括号语法错误由语法检查发现并纠正。git diff --check 通过。npm pack --dry-run 确认客户端、双语元数据及新增测试均在分发清单内。生成产物由构建脚本生成，没有手工修改。
+
+模型工具说明同步标明预设页适配暂停，set 应保留两个暂不生效字段；未改变 schema、审批或持久化行为。没有重新发起真实模型请求，首轮 prompt token 数未测。
+
+### 当前 profile 与浏览器边界
+
+任务期间重新查询发现当前 profile 已不包含 dsh-preset-manager：list_bundles 无此 bundle，Host Config 按包名查询为零项；Client Inspect 的设置导航只有一条原生 agent-presets。这个状态出现在修复安装之前，不能据此声称新版已经上线。没有自动装回插件，也没有修改当前 profile 或 DSH 安装目录。
+
+当前没有浏览器控制工具，未点击真实 GUI、刷新页面或验证视觉效果；没有启动额外 Web 服务，未发现 Web 构建 watcher。要使用本次修复，需重新安装本仓库，并在现有 GUI 中验收。历史版本的安装记录见下文，不表示本次修复已安装。
+
 ## 0.1.1 — 2026-10-21
 
 ### 目标与接口证据

@@ -7,10 +7,10 @@
   "authority": "installed 0.2.1-rc.2 declarations and artifacts plus live Cordis Inspect; dsh-dev-docs default rc.1 is not used as API authority",
   "surfaces": [
     "conversation.hero.agentPreset",
-    "settings.section#agent-presets",
     "plugins.bundle.config#dsh-preset-manager"
   ],
   "limitations": [
-    "Compatibility intentionally restricted to the inspected exact DSH version."
+    "Compatibility intentionally restricted to the inspected exact DSH version.",
+    "Presets settings-page integration is paused to avoid duplicate rc.2 navigation; stored settingsOrder and hiddenSettings remain inactive."
   ]
 }

@@ -192,34 +192,34 @@ const h = React.createElement;
 const NS = 'dsh-preset-manager';
 const TEXT = {
   zh: {
-    title: '预设显示管理', intro: '设置新对话与预设页面的隐藏范围和顺序。只影响展示，不删除预设、不修改默认预设或已有对话。',
-    global: '统一顺序', newSession: '新对话', settings: '预设页面', search: '搜索名称或 ID', hideNew: '在新对话隐藏', hideSettings: '在预设页面隐藏',
-    save: '保存更改', saving: '正在保存…', saved: '已保存', discard: '放弃修改 / 重新读取', reset: '恢复所有显示设置', resetConfirm: '恢复全部显示和原始顺序？点击保存后生效。',
-    inherit: '使用统一顺序', inheritNote: '当前继承统一顺序；移动任意一项后，此界面使用独立顺序。', globalNote: '统一顺序应用于没有单独排序的界面。隐藏选项按各自界面独立生效。',
+    title: '预设显示管理', intro: '设置新对话预设的隐藏范围和顺序。只影响展示，不删除预设、不修改默认预设或已有对话。',
+    global: '统一顺序', newSession: '新对话', search: '搜索名称或 ID', hideNew: '在新对话隐藏',
+    save: '保存更改', saving: '正在保存…', saved: '已保存', discard: '放弃修改 / 重新读取', reset: '恢复新对话显示', resetConfirm: '恢复新对话的全部显示和原始顺序？停用的预设页面配置将保留。点击保存后生效。',
+    inherit: '使用统一顺序', inheritNote: '当前继承统一顺序；移动任意一项后，此界面使用独立顺序。', globalNote: '新对话未单独排序时使用统一顺序。当前隐藏和排序仅影响新对话。',
     separateNote: '当前使用独立顺序。可点击“使用统一顺序”恢复继承。', up: '上移', down: '下移', top: '置顶', bottom: '置底',
     loading: '正在读取预设…', retry: '刷新列表', unavailable: '未取得可写配置，请确认插件已启用并刷新页面。', failure: '保存被拒绝，配置可能已被其他页面修改。修改未丢失，请重新读取后再调整。',
     changed: '配置已在别处更新。当前编辑仍保留；保存会检查版本，避免覆盖他人的修改。', unsaved: '有未保存的更改', empty: '没有匹配的预设',
     allHidden: '此界面没有可见预设。可在插件 → 预设管理中恢复显示。', default: '默认', broken: '加载失败', currentHidden: '当前选择已在列表中隐藏',
     picker: '选择新对话的预设', hideNote: '隐藏不是权限限制：当前或默认预设仍可使用，会话标题仍显示真实预设。DSH 的“编程工具”开关仍然生效。',
     settingsIntro: '按预设管理中保存的顺序展示。设为默认只影响新对话；已有对话保持原配置。', setDefault: '设为默认', view: '查看配置', close: '关闭', creator: '创建预设',
-    selectionError: '预设切换失败', dismiss: '关闭提示', sourceWait: '部分原生预设界面尚未就绪，接入将在它们加载后自动完成。',
-    groupNote: '沿用原生界面。预设页面保留内置与自定义分组，排序在各组内生效。',
-    sourceReady: '已接入新对话和预设页面', scopeHint: '调整的界面', preview: '可见预设', dormant: '配置中保留了当前未安装的预设 ID，重新安装后仍会沿用设置。',
+    selectionError: '预设切换失败', dismiss: '关闭提示', sourceWait: '新对话预设界面尚未就绪，接入将在它加载后自动完成。',
+    settingsPaused: '为避免 DSH 0.2.1-rc.2 出现重复导航，预设页面适配已停用。该页面使用原生显示和顺序；已有的页面隐藏、排序配置保留，但暂不生效。',
+    sourceReady: '已接入新对话', scopeHint: '调整的界面', preview: '可见预设', dormant: '配置中保留了当前未安装的预设 ID，重新安装后仍会沿用设置。',
   },
   en: {
-    title: 'Preset display manager', intro: 'Control visibility and order in New chat and the Presets page. Definitions, defaults and existing sessions are unchanged.',
-    global: 'Shared order', newSession: 'New chat', settings: 'Presets page', search: 'Search name or ID', hideNew: 'Hide in New chat', hideSettings: 'Hide on Presets page',
-    save: 'Save changes', saving: 'Saving…', saved: 'Saved', discard: 'Discard edits / reload', reset: 'Reset display settings', resetConfirm: 'Restore visibility and original order? Save to apply.',
-    inherit: 'Use shared order', inheritNote: 'Inheriting the shared order. Moving a row creates a separate order for this surface.', globalNote: 'The shared order applies to surfaces without a separate order. Visibility is configured separately for each surface.',
+    title: 'Preset display manager', intro: 'Control preset visibility and order in New chat. Definitions, defaults and existing sessions are unchanged.',
+    global: 'Shared order', newSession: 'New chat', search: 'Search name or ID', hideNew: 'Hide in New chat',
+    save: 'Save changes', saving: 'Saving…', saved: 'Saved', discard: 'Discard edits / reload', reset: 'Reset New chat display', resetConfirm: 'Restore all New chat presets and their original order? Paused Presets page settings will be retained. Save to apply.',
+    inherit: 'Use shared order', inheritNote: 'Inheriting the shared order. Moving a row creates a separate order for this surface.', globalNote: 'New chat uses the shared order unless a separate order is set. Visibility and order currently affect New chat only.',
     separateNote: 'Using a separate order. Choose “Use shared order” to inherit again.', up: 'Move up', down: 'Move down', top: 'Move to top', bottom: 'Move to bottom',
     loading: 'Loading presets…', retry: 'Refresh list', unavailable: 'Writable settings are unavailable. Check that the plugin is enabled and refresh the page.', failure: 'Save refused, possibly due to concurrent changes. Your draft is preserved. Reload before editing again.',
     changed: 'Settings changed elsewhere. Your draft is preserved; saving checks the revision to avoid overwriting newer edits.', unsaved: 'Unsaved changes', empty: 'No matching presets',
     allHidden: 'No visible presets on this surface. Restore them in Plugins → Preset Manager.', default: 'Default', broken: 'Failed to load', currentHidden: 'Current selection is hidden from the list',
     picker: 'Choose the new chat preset', hideNote: 'Hiding is not an access restriction. The current or default preset remains usable and session labels stay accurate. The DSH Coding Tools preference still applies.',
     settingsIntro: 'Shown in your saved display order. Changing the default affects new chats; existing chats retain their composition.', setDefault: 'Make default', view: 'View configuration', close: 'Close', creator: 'Create preset',
-    selectionError: 'Preset selection failed', dismiss: 'Dismiss', sourceWait: 'Some native preset surfaces are not ready. Integration will follow when they load.',
-    groupNote: 'Uses the native UI. The Presets page keeps built-in and custom groups; ordering applies within each group.',
-    sourceReady: 'Connected to New chat and Presets page', scopeHint: 'Surface to arrange', preview: 'Visible presets', dormant: 'Settings include IDs not currently installed. Their preferences are retained for reinstallation.',
+    selectionError: 'Preset selection failed', dismiss: 'Dismiss', sourceWait: 'The native New chat preset control is not ready. Integration will follow when it loads.',
+    settingsPaused: 'Presets page integration is paused to avoid duplicate navigation in DSH 0.2.1-rc.2. That page uses its native visibility and order. Existing page visibility and order settings are retained but inactive.',
+    sourceReady: 'Connected to New chat', scopeHint: 'Surface to arrange', preview: 'Visible presets', dormant: 'Settings include IDs not currently installed. Their preferences are retained for reinstallation.',
   },
 };
 const CSS = '.dpm{color:var(--dsw-alias-label-primary);font-size:14px;line-height:1.55;min-width:0}.dpm *{box-sizing:border-box}.dpm h2{font-size:20px;line-height:28px;margin:0 0 8px}.dpm h3{font-size:16px;margin:0}.dpm p{margin:8px 0 16px}.dpm-muted{color:var(--dsw-alias-label-secondary)}.dpm-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}.dpm button,.dpm select,.dpm input[type=search]{font:inherit;color:inherit;background:var(--dsw-alias-bg-layer-1);border:1px solid var(--dsw-alias-border-l1);border-radius:8px;padding:7px 11px;min-height:34px}.dpm button{cursor:pointer}.dpm button:hover{background:var(--dsw-alias-bg-layer-2)}.dpm button:disabled{opacity:.45;cursor:not-allowed}.dpm :focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}.dpm input[type=checkbox]{accent-color:var(--dsw-alias-brand-primary);width:16px;height:16px}.dpm label{display:inline-flex;align-items:center;gap:6px}.dpm [aria-pressed=true]{border-color:var(--dsw-alias-brand-primary);color:var(--dsw-alias-brand-primary)}.dpm-search{flex:1;min-width:160px}.dpm-list{list-style:none;padding:0;margin:12px 0;display:flex;flex-direction:column;gap:8px}.dpm-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px;border:1px solid var(--dsw-alias-border-l1);border-radius:12px;background:var(--dsw-alias-bg-layer-1)}.dpm-info{flex:1 1 220px;min-width:0}.dpm-title{font-weight:600;overflow-wrap:anywhere}.dpm-id{font-size:12px;overflow-wrap:anywhere;color:var(--dsw-alias-label-secondary)}.dpm-description{font-size:13px;color:var(--dsw-alias-label-secondary);overflow-wrap:anywhere;margin-top:4px}.dpm-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.dpm-controls button{padding:4px 9px}.dpm-checks{display:flex;flex-direction:column;gap:6px;font-size:12px}.dpm-badge{display:inline-block;font-size:11px;border:1px solid var(--dsw-alias-border-l2);border-radius:5px;padding:0 5px;margin-inline-start:8px}.dpm-error{color:var(--dsw-alias-state-error-primary);overflow-wrap:anywhere}.dpm-warn{color:var(--dsw-alias-state-warn-primary)}.dpm-success{color:var(--dsw-alias-state-success-primary)}.dpm-save{position:sticky;bottom:0;background:var(--dsw-alias-bg-base);border-top:1px solid var(--dsw-alias-border-l1);padding:12px 0;z-index:1}.dpm pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;background:var(--dsw-alias-bg-layer-2);padding:16px;border-radius:10px}.dpm-seat{display:inline-flex;align-items:center;gap:6px;max-width:100%;flex-wrap:wrap}.dpm-seat select{max-width:260px;border-radius:20px}.dpm-status{font-size:12px}.dpm-number{width:22px;color:var(--dsw-alias-label-secondary);font-variant-numeric:tabular-nums}@media(max-width:600px){.dpm-row{padding:10px;gap:8px}.dpm-controls{width:100%}.dpm-checks{flex-direction:row;flex-wrap:wrap}}';
@@ -241,7 +241,7 @@ function apply(ctx) {
   const t = ctx.locale.bind(NS);
   const nativeT = ctx.locale.bind('settings.agentPreset');
   const form = ctx.configForms.get(NS);
-  let integration = {hero:false, settings:false};
+  let integration = {hero:false};
   const listeners = new Set();
   const status = {getSnapshot:()=>integration, subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
   function report(key, ready) { if(integration[key]===ready)return; integration={...integration,[key]:ready}; for(const fn of listeners)fn(); }
@@ -283,7 +283,7 @@ function apply(ctx) {
     const ordered=presentPresets(rows,policy,scope,{includeHidden:true});
     const term=query.trim().toLocaleLowerCase();
     const filtered=ordered.filter(row=>[row.id,display(row,nativeT).name,row.description??''].some(value=>value.toLocaleLowerCase().includes(term)));
-    const orderField={global:'globalOrder',newSession:'newSessionOrder',settings:'settingsOrder'}[scope];
+    const orderField={global:'globalOrder',newSession:'newSessionOrder'}[scope];
     const canWrite=current.status==='ready' && current.writable && baseRevision!==undefined && !busy;
     const update=next=>{setDraft(next);setNotice('');};
     const move=(id,index)=>{
@@ -306,10 +306,10 @@ function apply(ctx) {
     const known=new Set(rows.map(row=>row.id));
     const dormant=Object.values(policy).some(ids=>ids.some(id=>!known.has(id)));
     return h('section',{className:'dpm'},style(),h('h2',null,tr('title')),h('p',{className:'dpm-muted'},tr('intro')),
-      h('p',{className:'dpm-status '+(connected.hero&&connected.settings?'dpm-success':'dpm-warn')},tr(connected.hero&&connected.settings?'sourceReady':'sourceWait')),
-      h('div',{className:'dpm-bar',role:'group','aria-label':tr('scopeHint')},...['global','newSession','settings'].map(key=>h('button',{key,type:'button','aria-pressed':scope===key,onClick:()=>setScope(key)},tr(key)))),
+      h('p',{className:'dpm-status '+(connected.hero?'dpm-success':'dpm-warn')},tr(connected.hero?'sourceReady':'sourceWait')),
+      h('div',{className:'dpm-bar',role:'group','aria-label':tr('scopeHint')},...['global','newSession'].map(key=>h('button',{key,type:'button','aria-pressed':scope===key,onClick:()=>setScope(key)},tr(key)))),
       h('p',{className:'dpm-muted'},tr(scope==='global'?'globalNote':policy[orderField].length?'separateNote':'inheritNote')),
-      h('p',{className:'dpm-muted'},tr('groupNote')),
+      h('p',{className:'dpm-warn'},tr('settingsPaused')),
       h('div',{className:'dpm-bar'},h('input',{type:'search',className:'dpm-search',value:query,onChange:event=>setQuery(event.target.value),placeholder:tr('search'),'aria-label':tr('search')}),
         h('button',{type:'button',disabled:loading,onClick:load},tr(loading?'loading':'retry')),
         scope!=='global'&&h('button',{type:'button',disabled:!canWrite||!policy[orderField].length,onClick:()=>update({...policy,[orderField]:[]})},tr('inherit'))),
@@ -321,20 +321,21 @@ function apply(ctx) {
         const index=ordered.findIndex(item=>item.id===row.id);const text=display(row,nativeT);
         return h('li',{className:'dpm-row',key:row.id,'data-preset-id':row.id},h('span',{className:'dpm-number'},index+1),
           h('div',{className:'dpm-info'},h('div',{className:'dpm-title'},text.name,row.isDefault&&h('span',{className:'dpm-badge'},tr('default')),row.broken&&h('span',{className:'dpm-badge dpm-error',title:row.broken},tr('broken'))),h('div',{className:'dpm-id'},row.id),text.description&&h('div',{className:'dpm-description'},text.description)),
-          h('div',{className:'dpm-controls'},h('div',{className:'dpm-checks'},...['hiddenNewSession','hiddenSettings'].map((field,i)=>h('label',{key:field},h('input',{type:'checkbox',checked:policy[field].includes(row.id),disabled:!canWrite,onChange:event=>hide(row.id,field,event.target.checked),'aria-label':tr(i?'hideSettings':'hideNew')+': '+text.name}),tr(i?'hideSettings':'hideNew')))),
+          h('div',{className:'dpm-controls'},h('div',{className:'dpm-checks'},h('label',null,h('input',{type:'checkbox',checked:policy.hiddenNewSession.includes(row.id),disabled:!canWrite,onChange:event=>hide(row.id,'hiddenNewSession',event.target.checked),'aria-label':tr('hideNew')+': '+text.name}),tr('hideNew'))),
             ...[['top','⇤',0,index===0],['up','↑',index-1,index===0],['down','↓',index+1,index===ordered.length-1],['bottom','⇥',ordered.length-1,index===ordered.length-1]].map(([key,label,target,disabled])=>h('button',{key,type:'button',disabled:!canWrite||disabled,title:tr(key),'aria-label':tr(key)+': '+text.name,onClick:()=>move(row.id,target)},label))));
       })),
       h('p',{className:'dpm-muted'},tr('hideNote')),dormant&&h('p',{className:'dpm-muted'},tr('dormant')),
       h('div',{className:'dpm-bar dpm-save'},h('button',{type:'button',disabled:!canWrite||!dirty,onClick:save},tr(busy?'saving':'save')),
         h('button',{type:'button',disabled:busy,onClick:()=>{const now=form.getSnapshot();const next=normalizePolicy(now.value?.policy);setDraft(next);setBase(next);setBaseRevision(now.revision);setError('');setNotice('');}},tr('discard')),
-        h('button',{type:'button',disabled:!canWrite,onClick:()=>{if(window.confirm(tr('resetConfirm')))update(normalizePolicy());}},tr('reset')),
+        h('button',{type:'button',disabled:!canWrite,onClick:()=>{if(window.confirm(tr('resetConfirm')))update({...policy,globalOrder:[],newSessionOrder:[],hiddenNewSession:[]});}},tr('reset')),
         h('span',{role:'status',className:notice?'dpm-success':'dpm-muted'},notice|| (dirty?tr('unsaved'):''))));
   }
 
   const makeNativeComponent = surface => nativeRender => createNativePresetComponent(nativeRender, form, surface);
   ctx.slots.inject('plugins.bundle.config',()=>ctx.slots.register({name:'plugins.bundle.config',key:NS,locale:NS},Manager));
   attachPresetSurface(ctx,{name:'conversation.hero.agentPreset',makeComponent:makeNativeComponent('newSession'),form,report:ready=>report('hero',ready)});
-  attachPresetSurface(ctx,{name:'settings.section',id:'agent-presets',makeComponent:makeNativeComponent('settings'),form,report:ready=>report('settings',ready)});
+  // rc.2 navigation lists raw registrations, so overriding this list cell adds
+  // a duplicate tab. Keep the native settings page until the shell supports it.
 }
 
 return { inject, apply };

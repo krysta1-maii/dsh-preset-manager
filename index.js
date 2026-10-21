@@ -102,12 +102,12 @@ export function apply(ctx) {
   ctx.provide('presetManager', manager);
   ctx.effect(() => ctx.tools.register({
     name: 'preset_manager',
-    description: 'Read or replace preset visibility and display order for the current profile’s Web UI. Hiding does not disable presets or change session/default selections. Changes affect all browsers using this profile and require approval.',
+    description: 'Read or replace New chat preset visibility and order for this profile. Presets page integration is paused. Hiding does not disable presets or change session/default selections. Changes affect all browsers using this profile and require approval.',
     parameters: {
       type: 'object',
       properties: {
         action: { type: 'string', enum: ['get', 'set'], description: 'get returns the full roster, policy and revision; set replaces the policy.' },
-        policy: { ...POLICY_SCHEMA, description: 'Required for set: all five arrays. Empty per-surface order inherits globalOrder. Unlisted preset ids follow roster order; unavailable ids remain in the saved policy.' },
+        policy: { ...POLICY_SCHEMA, description: 'Required for set: all five arrays. Preserve settingsOrder and hiddenSettings from get; both are retained but inactive. Empty newSessionOrder inherits globalOrder. Unlisted ids follow roster order; unavailable ids remain saved.' },
         expectedRevision: { type: 'integer', description: 'Required for set: revision from the latest get. A stale revision fails without writing; read again before retrying.' },
       },
       required: ['action'],
