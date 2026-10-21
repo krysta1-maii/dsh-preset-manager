@@ -1,0 +1,16 @@
+{
+  "version": "0.2.1-rc.2",
+  "tag": "dsh-v0.2.1-rc.2",
+  "commit": "687f282e8625c6b8d11ff58211a90524be2e4317",
+  "source": "https://github.com/deepseek-ai/deepseek-harness/tree/687f282e8625c6b8d11ff58211a90524be2e4317",
+  "status": "candidate-targeted-review",
+  "authority": "installed 0.2.1-rc.2 declarations and artifacts plus live Cordis Inspect; dsh-dev-docs default rc.1 is not used as API authority",
+  "surfaces": [
+    "conversation.hero.agentPreset",
+    "settings.section#agent-presets",
+    "plugins.bundle.config#dsh-preset-manager"
+  ],
+  "limitations": [
+    "Compatibility intentionally restricted to the inspected exact DSH version."
+  ]
+}

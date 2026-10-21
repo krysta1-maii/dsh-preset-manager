@@ -1,0 +1,33 @@
+# Dependencies and local caches
+node_modules/
+.cache/
+.npm/
+
+# Test reports and temporary files
+coverage/
+.nyc_output/
+/tmp/
+/temp/
+*.log
+*.tmp
+*.tsbuildinfo
+
+# Packaged release artifacts
+*.tgz
+
+# Local secrets (sanitized examples may be tracked)
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Editor and OS files
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.idea/
+
+# client.js is a required distributable: commit it with its source.
+# package-lock.json is tracked for reproducible dependency installation.

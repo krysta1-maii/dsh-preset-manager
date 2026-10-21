@@ -1,0 +1,4 @@
+- insert:
+    - id: dsh-preset-manager
+      name: dsh-preset-manager
+      config: {}
