@@ -60,9 +60,98 @@ function movePreset(order, id, targetIndex) {
   return next;
 }
 
-/** Bind a replacement only while the original 0.2.1-rc.2 entry exists.
- * No DOM access, registration mutation, or service method patching. */
-function attachPresetSurface(ctx, { name, id, component, form, report = () => {} }) {
+
+const sameItems = (a, b) => a.length === b.length && a.every((item, i) => item === b[i]);
+const isPresetMenu = node => React.isValidElement(node) && Array.isArray(node.props.items)
+  && typeof node.props.selectedId === 'string' && typeof node.props.onSelect === 'function'
+  && React.isValidElement(node.props.anchor) && node.props.anchor.type === 'button'
+  && node.props.anchor.props['aria-haspopup'] === 'menu';
+const isPresetCard = node => React.isValidElement(node) && node.type === 'li'
+  && typeof node.props['data-agent-preset-id'] === 'string';
+const isPresetList = node => React.isValidElement(node) && node.type === 'ul'
+  && Array.isArray(node.props.children) && node.props.children.length > 0
+  && node.props.children.every(isPresetCard);
+
+/** Adapt only the inspected rc.2 list elements, leaving native controls and callbacks intact.
+ * The controller keeps its complete roster, including hidden current/default presets.
+ * No DOM/CSS edits, component imports, or changes to another plugin's objects. */
+function presentNativeTree(tree, policy, surface) {
+  function visit(node) {
+    if (Array.isArray(node)) {
+      const children = node.map(visit);
+      return sameItems(children, node) ? node : children;
+    }
+    if (!React.isValidElement(node)) return node;
+    const props = node.props;
+    if (surface === 'newSession' && isPresetMenu(node)) {
+      const items = presentPresets(props.items, policy, surface);
+      if (sameItems(items, props.items)) return node;
+      // Preserve the current label, icon, handlers, focus behavior and error toast.
+      // An empty menu leaves the native anchor visible but disabled.
+      return React.cloneElement(node, {
+        items, open: props.open && items.length > 0,
+        anchor: React.cloneElement(props.anchor, {
+          disabled: props.anchor.props.disabled || items.length === 0,
+          'aria-expanded': props.anchor.props['aria-expanded'] && items.length > 0,
+        }),
+      });
+    }
+    if (surface === 'settings' && isPresetList(node)) {
+      const rows = props.children.map(element => ({ id: element.props['data-agent-preset-id'], element }));
+      const children = presentPresets(rows, policy, surface).map(row => row.element);
+      return sameItems(children, props.children) ? node : React.cloneElement(node, { children });
+    }
+    // Only visit already-created children; do not execute nested components or inspect DOM.
+    const children = visit(props.children);
+    if (children === props.children) return node;
+    if (surface === 'settings' && node.type === 'section' && Array.isArray(props.children)) {
+      const index = props.children.findIndex(isPresetList);
+      if (index >= 0 && children[index].props.children.length === 0) {
+        // rc.2 groups are [heading, cards, creatorButton]. Keep the native creator entry.
+        const hasOtherContent = children.some((child, i) => i !== index && child
+          && !(React.isValidElement(child) && child.type === 'h3'));
+        if (!hasOtherContent) return null;
+      }
+    }
+    return React.cloneElement(node, { children });
+  }
+  return visit(tree);
+}
+
+function findPresetMenu(node) {
+  if (isPresetMenu(node)) return node;
+  if (Array.isArray(node)) {
+    for (const child of node) { const menu = findPresetMenu(child); if (menu) return menu; }
+  } else if (React.isValidElement(node)) return findPresetMenu(node.props.children);
+}
+
+/** The rc.2 native entries are plain function components. A fixed original
+ * function runs unconditionally with its original props and hooks on every render. */
+function createNativePresetComponent(nativeRender, form, surface) {
+  return function NativePresetSurface(props) {
+    const subscribe = React.useCallback(listener => form.subscribe(listener), []);
+    const snapshot = React.useCallback(() => form.getSnapshot(), []);
+    const config = React.useSyncExternalStore(subscribe, snapshot, snapshot);
+    const tree = nativeRender(props);
+    const projected = config.status === 'ready' ? presentNativeTree(tree, config.value?.policy, surface) : tree;
+    const menu = surface === 'newSession' ? findPresetMenu(projected) : undefined;
+    const ids = JSON.stringify(menu?.props.items.map(item => item.id) ?? []);
+    const previousIds = React.useRef(ids);
+    React.useLayoutEffect(() => {
+      if (previousIds.current === ids) return;
+      previousIds.current = ids;
+      // Close the original state too: all-hidden → restored must not reopen the
+      // menu, and reordered/removed items must not retain a stale focus target.
+      menu?.props.onClose();
+    }, [ids, menu]);
+    return projected;
+  };
+}
+
+/** Bind to one exact native registration for its lifetime. Each new native render
+ * function gets a new wrapper identity, so its hooks cannot leak across reloads.
+ * makeComponent must render that fixed function unconditionally, never swap it. */
+function attachPresetSurface(ctx, { name, id, makeComponent, form, report = () => {} }) {
   return ctx.slots.inject(name, () => {
     let source;
     let remove;
@@ -73,9 +162,9 @@ function attachPresetSurface(ctx, { name, id, component, form, report = () => {}
       updating = true;
       try {
         const next = form.getSnapshot().status === 'ready' ? ctx.slots.entries(name).find(entry =>
-          entry.component !== component && entry.locale === 'settings.agentPreset' &&
+          entry.locale === 'settings.agentPreset' &&
           entry.options.id === id && (entry.options.priority ?? 0) === 0 &&
-          typeof entry.inject === 'function') : undefined;
+          typeof entry.inject === 'function' && typeof entry.component === 'function') : undefined;
         if (next === source) return;
         remove?.();
         remove = undefined;
@@ -86,11 +175,8 @@ function attachPresetSurface(ctx, { name, id, component, form, report = () => {}
         remove = ctx.slots.register({
           ...next.options, name, locale: next.locale,
           priority: (next.options.priority ?? 0) - 10,
-          inject: (...args) => {
-            const original = next.inject(...args);
-            return { ...original, hooks: { ...original.hooks, presetManager: form } };
-          },
-        }, component);
+          inject: next.inject,
+        }, makeComponent(next.component));
         report(true);
       } finally { updating = false; }
     };
@@ -104,7 +190,6 @@ function attachPresetSurface(ctx, { name, id, component, form, report = () => {}
 
 const h = React.createElement;
 const NS = 'dsh-preset-manager';
-const identity = value => value;
 const TEXT = {
   zh: {
     title: '预设显示管理', intro: '设置新对话与预设页面的隐藏范围和顺序。只影响展示，不删除预设、不修改默认预设或已有对话。',
@@ -118,6 +203,7 @@ const TEXT = {
     picker: '选择新对话的预设', hideNote: '隐藏不是权限限制：当前或默认预设仍可使用，会话标题仍显示真实预设。DSH 的“编程工具”开关仍然生效。',
     settingsIntro: '按预设管理中保存的顺序展示。设为默认只影响新对话；已有对话保持原配置。', setDefault: '设为默认', view: '查看配置', close: '关闭', creator: '创建预设',
     selectionError: '预设切换失败', dismiss: '关闭提示', sourceWait: '部分原生预设界面尚未就绪，接入将在它们加载后自动完成。',
+    groupNote: '沿用原生界面。预设页面保留内置与自定义分组，排序在各组内生效。',
     sourceReady: '已接入新对话和预设页面', scopeHint: '调整的界面', preview: '可见预设', dormant: '配置中保留了当前未安装的预设 ID，重新安装后仍会沿用设置。',
   },
   en: {
@@ -132,6 +218,7 @@ const TEXT = {
     picker: 'Choose the new chat preset', hideNote: 'Hiding is not an access restriction. The current or default preset remains usable and session labels stay accurate. The DSH Coding Tools preference still applies.',
     settingsIntro: 'Shown in your saved display order. Changing the default affects new chats; existing chats retain their composition.', setDefault: 'Make default', view: 'View configuration', close: 'Close', creator: 'Create preset',
     selectionError: 'Preset selection failed', dismiss: 'Dismiss', sourceWait: 'Some native preset surfaces are not ready. Integration will follow when they load.',
+    groupNote: 'Uses the native UI. The Presets page keeps built-in and custom groups; ordering applies within each group.',
     sourceReady: 'Connected to New chat and Presets page', scopeHint: 'Surface to arrange', preview: 'Visible presets', dormant: 'Settings include IDs not currently installed. Their preferences are retained for reinstallation.',
   },
 };
@@ -142,14 +229,13 @@ function display(row, t) {
   if (row.name === undefined && Object.hasOwn(keys, row.id)) return {name:t('preset'+keys[row.id]+'Name'), description:t('preset'+keys[row.id]+'Description')};
   return {name:row.name ?? row.id, description:row.description};
 }
-function codingVisible(row, enabled) { return enabled || row.name !== undefined || !['ptc','minimal'].includes(row.id); }
 function useObservable(source) {
   const subscribe = React.useCallback(listener => source.subscribe(listener), [source]);
   const snapshot = React.useCallback(() => source.getSnapshot(), [source]);
   return React.useSyncExternalStore(subscribe, snapshot, snapshot);
 }
 
-const inject = ['slots', 'locale', 'configForms', 'remote.agentPresets'];
+const inject = ['slots', 'locale', 'configForms', 'remote', 'remote.agentPresets'];
 function apply(ctx) {
   for (const locale of ['zh','en']) ctx.effect(() => ctx.locale.register(NS, locale, TEXT[locale]));
   const t = ctx.locale.bind(NS);
@@ -223,13 +309,14 @@ function apply(ctx) {
       h('p',{className:'dpm-status '+(connected.hero&&connected.settings?'dpm-success':'dpm-warn')},tr(connected.hero&&connected.settings?'sourceReady':'sourceWait')),
       h('div',{className:'dpm-bar',role:'group','aria-label':tr('scopeHint')},...['global','newSession','settings'].map(key=>h('button',{key,type:'button','aria-pressed':scope===key,onClick:()=>setScope(key)},tr(key)))),
       h('p',{className:'dpm-muted'},tr(scope==='global'?'globalNote':policy[orderField].length?'separateNote':'inheritNote')),
+      h('p',{className:'dpm-muted'},tr('groupNote')),
       h('div',{className:'dpm-bar'},h('input',{type:'search',className:'dpm-search',value:query,onChange:event=>setQuery(event.target.value),placeholder:tr('search'),'aria-label':tr('search')}),
         h('button',{type:'button',disabled:loading,onClick:load},tr(loading?'loading':'retry')),
         scope!=='global'&&h('button',{type:'button',disabled:!canWrite||!policy[orderField].length,onClick:()=>update({...policy,[orderField]:[]})},tr('inherit'))),
       dirty&&current.revision!==baseRevision&&h('p',{className:'dpm-warn',role:'status'},tr('changed')),
       current.status!=='ready'&&h('p',{role:'status'},tr('unavailable')),
       error&&h('p',{className:'dpm-error',role:'alert'},error),
-      !filtered.length&&h('p',{className:'dpm-muted'},tr(loading?'loading':'empty')),
+      !error&&!filtered.length&&h('p',{className:'dpm-muted'},tr(loading?'loading':'empty')),
       h('ol',{className:'dpm-list'},...filtered.map(row=>{
         const index=ordered.findIndex(item=>item.id===row.id);const text=display(row,nativeT);
         return h('li',{className:'dpm-row',key:row.id,'data-preset-id':row.id},h('span',{className:'dpm-number'},index+1),
@@ -244,53 +331,10 @@ function apply(ctx) {
         h('span',{role:'status',className:notice?'dpm-success':'dpm-muted'},notice|| (dirty?tr('unsaved'):''))));
   }
 
-  function Hero(props) {
-    const tr=useLocale();
-    const state=props.useAgentPresetSeat(identity);
-    const config=props.usePresetManager(identity);
-    const developerTools=props.useDeveloperTools(identity);
-    const main=props.useSessionRetainInfo(info=>props.sessionId===undefined || (info?.retainedBy.mainView??0)>0);
-    const [error,setError]=React.useState('');
-    const [dismissedReason,setDismissedReason]=React.useState('');
-    React.useEffect(()=>{let live=true;Promise.resolve(props.load()).catch(err=>{if(live)setError(String(err.message??err));});return()=>{live=false;};},[props.load]);
-    React.useEffect(()=>{if(state.introduce)props.introduced();},[state.introduce,props.introduced]);
-    const options=config.value ? presentPresets(state.options,normalizePolicy(config.value.policy),'newSession').filter(row=>codingVisible(row,developerTools)) : [];
-    const current=state.options.find(row=>row.id===state.current);
-    const hidden=!options.some(row=>row.id===state.current);
-    const label=current?display(current,props.t).name:state.current;
-    const refusal=typeof state.error==='string' ? (state.error===dismissedReason?'':state.error) : state.error?.reason;
-    if(!main || !state.options.length)return null;
-    return h('div',{className:'dpm dpm-seat'},style(),h('select',{'aria-label':tr('picker'),title:hidden?tr('currentHidden'):tr('picker'),value:state.current,disabled:state.busy||!options.length,onChange:event=>{setError('');setDismissedReason('');Promise.resolve(props.select(event.target.value)).catch(err=>setError(String(err.message??err)));}},
-      hidden&&h('option',{value:state.current,hidden:true,disabled:true},label),...options.map(row=>h('option',{key:row.id,value:row.id},display(row,props.t).name))),
-      !options.length&&h('span',{className:'dpm-status dpm-muted'},tr('allHidden')),
-      (refusal||error)&&h('span',{className:'dpm-error',role:'alert'},refusal||error,h('button',{type:'button','aria-label':tr('dismiss'),onClick:()=>{setDismissedReason(typeof state.error==='string'?state.error:state.error?.reason??'');props.dismissRefusal(state.error);setError('');}},'×')));
-  }
-
-  function PresetsPage(props) {
-    const tr=useLocale();
-    const state=props.useAgentPresetSection(identity);
-    const config=props.usePresetManager(identity);
-    const developerTools=props.useDeveloperTools(identity);
-    const [error,setError]=React.useState('');
-    const closeRef=React.useRef(props.closeView);
-    closeRef.current=props.closeView;
-    React.useEffect(()=>{let live=true;Promise.resolve(props.load()).catch(err=>{if(live)setError(String(err.message??err));});return()=>{live=false;closeRef.current();};},[props.load]);
-    const rows=config.value ? presentPresets(state.rows,normalizePolicy(config.value.policy),'settings').filter(row=>codingVisible(row,developerTools)) : [];
-    const run=operation=>{setError('');Promise.resolve().then(operation).catch(err=>setError(String(err.message??err)));};
-    return h('section',{className:'dpm'},style(),h('h2',null,props.t('nav')),h('p',{className:'dpm-muted'},tr('settingsIntro')),
-      (state.error||error)&&h('p',{className:'dpm-error',role:'alert'},state.error||error),
-      state.status==='loading'&&h('p',{role:'status'},tr('loading')),
-      state.view&&h('section',{'aria-label':state.view.title},h('div',{className:'dpm-bar'},h('h3',null,state.view.title),h('button',{type:'button',onClick:props.closeView},tr('close'))),h('pre',{tabIndex:0},state.view.content)),
-      h('ul',{className:'dpm-list'},...rows.map(row=>{const text=display(row,props.t);return h('li',{key:row.id,className:'dpm-row','data-agent-preset-id':row.id},
-        h('div',{className:'dpm-info'},h('div',{className:'dpm-title'},text.name,row.isDefault&&h('span',{className:'dpm-badge'},tr('default'))),h('div',{className:'dpm-id'},row.id),h('div',{className:'dpm-description'},text.description),row.broken&&h('div',{className:'dpm-error'},row.broken)),
-        h('div',{className:'dpm-controls'},h('button',{type:'button',disabled:state.saving||row.isDefault||row.broken!==undefined,onClick:()=>run(()=>props.makeDefault(row.id))},tr(row.isDefault?'default':'setDefault')),h('button',{type:'button',onClick:()=>run(()=>props.view(row.id))},tr('view'))));})),
-      state.status==='ready'&&!rows.length&&h('p',{className:'dpm-muted'},tr('allHidden')),
-      h('div',{className:'dpm-bar'},h('button',{type:'button',disabled:state.saving,onClick:()=>run(props.load)},tr('retry')),
-        props.startCreatorDraft&&rows.some(row=>row.id==='cordis'&&!row.broken)&&h('button',{type:'button',disabled:state.saving,onClick:()=>{props.startCreatorDraft();props.close();}},tr('creator'))));
-  }
+  const makeNativeComponent = surface => nativeRender => createNativePresetComponent(nativeRender, form, surface);
   ctx.slots.inject('plugins.bundle.config',()=>ctx.slots.register({name:'plugins.bundle.config',key:NS,locale:NS},Manager));
-  attachPresetSurface(ctx,{name:'conversation.hero.agentPreset',component:Hero,form,report:ready=>report('hero',ready)});
-  attachPresetSurface(ctx,{name:'settings.section',id:'agent-presets',component:PresetsPage,form,report:ready=>report('settings',ready)});
+  attachPresetSurface(ctx,{name:'conversation.hero.agentPreset',makeComponent:makeNativeComponent('newSession'),form,report:ready=>report('hero',ready)});
+  attachPresetSurface(ctx,{name:'settings.section',id:'agent-presets',makeComponent:makeNativeComponent('settings'),form,report:ready=>report('settings',ready)});
 }
 
 return { inject, apply };
