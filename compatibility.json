@@ -1,4 +1,5 @@
 {
+  "range": ">=0.2.1-0 <0.2.2-0",
   "version": "0.2.1-rc.2",
   "tag": "dsh-v0.2.1-rc.2",
   "commit": "687f282e8625c6b8d11ff58211a90524be2e4317",
@@ -9,8 +10,17 @@
     "conversation.hero.agentPreset",
     "plugins.bundle.config#dsh-preset-manager"
   ],
+  "additionalReviews": [
+    {
+      "version": "0.2.1-rc.3",
+      "tag": "dsh-v0.2.1-rc.3",
+      "commit": "1f81c047fc48fa190a683e469daa699857e9afe8",
+      "source": "https://github.com/deepseek-ai/deepseek-harness/tree/1f81c047fc48fa190a683e469daa699857e9afe8",
+      "scope": "Source diff, target compatibility evaluator, and isolated installed-client/native-seat tests; no full rc.3 browser acceptance."
+    }
+  ],
   "limitations": [
-    "Compatibility intentionally restricted to the inspected exact DSH version.",
+    "The user requested admission of all 0.2.1 prereleases and the final 0.2.1 release; other releases in this range have not been verified.",
     "Presets settings-page integration is paused to avoid duplicate rc.2 navigation; stored settingsOrder and hiddenSettings remain inactive."
   ]
 }

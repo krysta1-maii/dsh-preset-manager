@@ -1,6 +1,6 @@
 # DSH 预设管理
 
-管理 DSH Web 新对话的 preset 显示范围和顺序。当前适配 **DSH 0.2.1-rc.2**，不修改 DSH 安装目录，不修改 preset 定义。
+管理 DSH Web 新对话的 preset 显示范围和顺序。兼容声明覆盖 **DSH 0.2.1 系列（含预发布版）**，不修改 DSH 安装目录，不修改 preset 定义。
 
 ## 使用
 
@@ -49,8 +49,8 @@ Loader 行 ID 和 settings namespace 都是 dsh-preset-manager。Config 的 poli
 
 通过公开的 slots.entries / subscribe / register 绑定原生新对话预设选择器，完整复用原 inject 和原生函数组件的渲染逻辑。只对返回的 React 元素中的菜单 items 做不可变过滤和排序，不修改原 registration、snapshot、DOM 或 CSS；原生控制器始终保留完整 roster，因此隐藏当前项不会丢失名称或改变选择。菜单键盘操作与错误提示沿用原逻辑，全部隐藏时禁用原生菜单按钮。客户端不注册 settings.section，也不包装 settings shell；原有设置页列表转换函数及测试暂保留，但不接入运行中的页面。
 
-元素结构和原生组件作为函数调用的约定是 **0.2.1-rc.2 专属适配**，不是跨版本稳定 API。每个源注册生成独立 wrapper，原生函数在每次渲染中无条件调用；原插件卸载时移除适配，重新加载时创建新 wrapper，避免复用旧 hooks。本插件卸载时撤销自己的注册和订阅。未设置任何策略时返回原生元素本身，不复制一套控件。
+元素结构和原生组件作为函数调用的约定以 **0.2.1-rc.2** 为实现基线，并已核对 rc.3 的对应结构；它们不是跨版本稳定 API。每个源注册生成独立 wrapper，原生函数在每次渲染中无条件调用；原插件卸载时移除适配，重新加载时创建新 wrapper，避免复用旧 hooks。本插件卸载时撤销自己的注册和订阅。未设置任何策略时返回原生元素本身，不复制一套控件。
 
-兼容依据是已安装的 0.2.1-rc.2 声明和产物、Cordis Inspect，以及[官方 tag 对应提交](https://github.com/deepseek-ai/deepseek-harness/tree/687f282e8625c6b8d11ff58211a90524be2e4317)。版本范围刻意固定；升级 DSH 后应重新核对原生 inject 结构，不建议绕过兼容检查。图标为本项目原创 SVG。
+兼容依据是已安装的 0.2.1-rc.2 声明和产物、Cordis Inspect，以及[官方 tag 对应提交](https://github.com/deepseek-ai/deepseek-harness/tree/687f282e8625c6b8d11ff58211a90524be2e4317)。按用户要求，`engines.dsh` 放宽为 `>=0.2.1-0 <0.2.2-0`，覆盖 0.2.1 的预发布版与正式版，不包含 0.2.2。rc.3 已按[官方固定提交](<https://github.com/deepseek-ai/deepseek-harness/tree/1f81c047fc48fa190a683e469daa699857e9afe8>)完成源码增量及目标接口隔离检查，未完成整套 rc.3 浏览器验收；范围内其他版本未逐一验证，升级后仍应核对原生 inject 结构。图标为本项目原创 SVG。
 
 实际验证记录见 [验证说明](<VERIFICATION.md>)。
