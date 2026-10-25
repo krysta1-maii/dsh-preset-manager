@@ -7,7 +7,7 @@ import TestRenderer, { act } from 'react-test-renderer';
 
 const artifact = await readFile(new URL('../client.js', import.meta.url), 'utf8');
 const copy = value => JSON.parse(JSON.stringify(value));
-function environment(language = 'en') {
+function environment(language = 'en', { list } = {}) {
   let client;
   vm.runInNewContext(artifact, {
     window: { confirm: () => true, __ModuleLoader__: { load({ factory }) {
@@ -63,9 +63,9 @@ function environment(language = 'en') {
       getSnapshot: () => localeSnapshot, subscribe: () => () => {},
     },
     configForms: { get: () => form, describe: () => ({ ensure: async () => {} }) },
-    remote: { agentPresets: { list: async () => ({ ok: true, value: { presets: [
+    remote: { agentPresets: { list: list ?? (async () => ({ ok: true, value: { presets: [
       { id: 'a', name: 'Alpha' }, { id: 'b', name: 'Beta' },
-    ] } }) } },
+    ] } })) } },
     on(event, fn) { assert.equal(event, 'connection/reset'); events.add(fn); return () => events.delete(fn); },
   };
   const registerNative = (name, id) => slots.register({
@@ -121,6 +121,22 @@ for (const language of ['en', 'zh']) test('manager explains paused settings inte
   assert.equal(env.events.size, 0);
 });
 
+test('retained unavailable IDs are reported only after the roster loads', async () => {
+  const retained = 'Settings include IDs not currently installed';
+  for (const [list, expected] of [[() => new Promise(() => {}), false], [undefined, true]]) {
+    const env = environment('en', { list });
+    const Manager = env.slots.entries('plugins.bundle.config')[0].component;
+    let renderer;
+    try {
+      await act(async () => { renderer = TestRenderer.create(React.createElement(Manager, { view: 'page' })); });
+      assert.equal(JSON.stringify(renderer.toJSON()).includes(retained), expected);
+    } finally {
+      if (renderer) act(() => renderer.unmount());
+      env.dispose();
+    }
+  }
+});
+
 test('saving and resetting New chat preserve paused settings policy', async () => {
   const env = environment();
   const Manager = env.slots.entries('plugins.bundle.config')[0].component;
@@ -128,7 +144,11 @@ test('saving and resetting New chat preserve paused settings policy', async () =
   const button = label => renderer.root.findAllByType('button').find(node => node.children.includes(label));
   try {
     await act(async () => { renderer = TestRenderer.create(React.createElement(Manager, { view: 'detail' })); });
-    act(() => renderer.root.findAllByProps({ type: 'checkbox' })[0].props.onChange({ target: { checked: true } }));
+    const first = () => renderer.root.findAllByProps({ type: 'checkbox' })[0];
+    assert.equal(first().props.role, 'switch');
+    assert.equal(first().props.checked, true, 'switch on means shown in New chat');
+    act(() => first().props.onChange({ target: { checked: false } }));
+    assert.equal(first().props.checked, false);
     await act(async () => { await button('Save changes').props.onClick(); });
     assert.deepEqual(env.writes[0], { ...env.originalPolicy, hiddenNewSession: ['b'] });
     act(() => button('Reset New chat display').props.onClick());

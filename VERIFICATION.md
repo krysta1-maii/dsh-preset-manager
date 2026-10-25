@@ -1,5 +1,20 @@
 # 验证记录
 
+## 未发布界面优化 — 2026-10-26
+
+### 范围
+
+只重做管理面板（plugins.bundle.config）的展示层，配置格式、保存路径、revision 检查、模型工具和新对话选择器适配均未改动。样式只使用 DSH 主题 token；依据是本地 deepseek-harness 仓库中 dsh-v0.2.1-rc.2（687f282e）固定对象的 ui-theme 样式、ui-primitives 的 Button / SegmentedControl / Switch / Input / Tag 样式，以及插件详情页容器。计划使用的 alias token 在 rc.2 和 rc.3 的浅色、深色主题中都有定义。客户端仍只从模块表引入 React，没有引入 ui-primitives。
+
+### 本地检查
+
+- npm run check：构建、Host/Client 语法检查通过，**39/39 测试通过**。显示开关的语义改为“开启表示显示”，原有保存/重置测试改为关闭第一项的开关，并断言 role=switch 与选中状态。新增测试覆盖列表读取完成前不显示“未安装 ID”提示；按照修复前的判断条件，这个测试会失败。
+- 静态预览：在仓库外的 /tmp 预览页加载本仓库生成的 client.js、React 18.3.1 UMD 和 rc.2 主题 CSS，用桩实现 slots、locale、configForms 和 remote，再用 headless Chrome 截图。检查了浅色和深色主题、中文和英文、约 560px 和 420px 内容宽度、未保存、已保存、保存被拒、列表读取失败、加载中、等待新对话界面接入、全部隐藏和独立顺序等状态。无头截图不会推进 CSS 过渡，因此使用 prefers-reduced-motion 截取最终状态。
+
+### 未完成
+
+本次按要求**没有安装到当前 profile**，也没有修改 DSH 安装目录或 profile。静态预览不是 DSH 实际页面：没有验证真实插件页容器、真实设置读写、刷新后的持久化、键盘焦点在实际页面中的表现，以及 rc.2 / rc.3 实际页面的视觉效果。安装后仍需在 GUI 中验收。
+
 ## 未发布修复 — 2026-10-21
 
 ### 范围与原因
