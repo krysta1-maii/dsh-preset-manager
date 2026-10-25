@@ -1,5 +1,23 @@
 # 验证记录
 
+## 0.1.2 — 2026-10-26
+
+### 升版与安装
+
+插件版本从 0.1.1 升至 0.1.2。`package.json` 与 `package-lock.json` 的项目版本已同步。配置格式未改。安装目录保持 `/home/andyk/.dsh-local-plugins/dsh-preset-manager`；profile `web` 的依赖仍是 `link:/home/andyk/.dsh-local-plugins/dsh-preset-manager`，`node_modules/dsh-preset-manager` 仍指向该目录。没有把链接改到本仓库路径。
+
+有 HMR 时，对已安装包直接 `install_bundle` 会在 pnpm 之前返回 `already-installed`。本次先把 0.1.2 文件同步到既有目录（保留该目录的 `node_modules`，不复制 `.git` 和 `.cache`），再 `remove_bundle` 后以同一绝对路径 `install_bundle`。运行中的 DSH 是 0.2.1-rc.3。
+
+- `npm run check`：构建、Host/Client 语法检查通过，**39/39 测试通过**。
+- remove：`application: applied`，`warnings: []`，pnpm 退出码 0。
+- install：`application: applied`，`warnings: []`，`version: 0.1.2`，`bundle: dsh-preset-manager`，pnpm 退出码 0。pnpm 输出有既有 profile 的 peer dependency 提示，未为此升级其他插件。
+- Host Config `include:dsh-preset-manager` 状态为 schema，`packageDir` 解析到 profile 中的上述链接。
+- `preset_manager` get 返回 8 项 roster。五个策略数组与升级前一致：`newSessionOrder` 为 ptc-instant、standard、ptc、cordis-ptc、minimal、cordis、chat-assistant、standard-instant；`hiddenNewSession` 为 standard、cordis、chat-assistant、ptc；其余三个数组为空。revision 从 2 变为 4，本次没有调用 set。
+- Client Inspect：`plugins.bundle.config` 的 key `dsh-preset-manager` 为 active；`conversation.hero.agentPreset` 上 priority -10 的包装注册为 active，priority 0 的原生注册为 inactive。
+- 安装目录的 locale 仍导出中文标题“预设管理”和英文标题“Preset Manager”。没有浏览器控制，未验证渲染后的标题、图标和面板视觉。槽位仍在不证明浏览器已执行新的 `client.js`；请刷新现有 GUI 后再看面板。
+
+重装后该 bundle 排到 profile 选择列表末尾（19 项中的第 19 项）。这是管理器先卸载再安装的既有行为，不是安装目录变化。
+
 ## 未发布界面优化 — 2026-10-26
 
 ### 范围
