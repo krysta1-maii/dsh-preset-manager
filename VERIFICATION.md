@@ -1,5 +1,26 @@
 # 验证记录
 
+## 0.2.0 — 2026-11-02 移除模型工具
+
+### 升版
+
+插件版本从 0.1.2 升至 0.2.0，`package.json` 与 `package-lock.json` 的项目版本已同步。本次移除模型工具和宿主服务，属于不兼容变更；配置格式不变。
+
+### 范围
+
+按用户要求移除 `preset_manager` 模型工具、写入审批流程、宿主侧 `presetManager` 服务及其测试。Host 的 `inject` 从 `['settings', 'agentPresets', 'tools', 'approval']` 改为 `['settings']`；Web 面板、槽位适配和五字段配置格式不变。当前仓库的 Host 半只保留 volatile Config 和 `settings.configure({ auto: false })`。
+
+### 本地检查
+
+- `npm run check`：构建、Host/Client 语法检查通过，**29/29 测试通过**。测试数从 39 减少到 29，减少的是工具、审批、revision 写入和宿主服务相关用例；剩余用例覆盖 Config 默认值、volatile schema、Settings 配置和客户端适配。
+- `git diff --check` 通过。
+- `npm pack --dry-run` 使用工作区内 npm cache：版本 0.2.0，22 个文件，`index.js` 887 B，分发包不再包含工具实现。
+- `node --check index.js` 与 `node --check client.js` 通过。
+
+### 未完成
+
+本次没有同步或重装 `/home/andyk/.dsh-local-plugins/dsh-preset-manager`。该安装副本仍是旧版，`index.js` 的 `inject` 仍包含 `agentPresets`、`tools`、`approval`，因此当前运行中的 DSH 仍会暴露 `preset_manager`。要让工具从现有 GUI 消失，需要把本仓库同步到安装目录并重新加载/重装插件，或重启 DSH；本次未执行。当前 profile 的浏览器面板行为未在真实 GUI 中重新验收。历史记录中出现的 `preset_manager` 描述的是移除前的版本。
+
 ## 0.1.2 — 2026-10-26
 
 ### 升版与安装

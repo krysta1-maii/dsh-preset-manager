@@ -29,7 +29,7 @@ npm run check
 
 浏览器产物通过 DSH ModuleLoader 加载，唯一模块导入是 DSH 提供的 React。没有额外 Web 服务器、浏览器 DOM 注入或跨插件模块导入。修改源码后执行 npm run build，再按 DSH 对已安装包更新的要求重启/重新加载；本项目不承诺没有 watcher 的自动热更新。
 
-## 配置与模型工具
+## 配置
 
 Loader 行 ID 和 settings namespace 都是 dsh-preset-manager。Config 的 policy 对象包含：
 
@@ -43,7 +43,7 @@ Loader 行 ID 和 settings namespace 都是 dsh-preset-manager。Config 的 poli
 
 未排序的 preset 保留原生相对顺序，排在已指定项目之后。未安装 ID 保留在配置里，重新安装后继续生效。保存使用 revision 防止旧草稿覆盖其他页面的修改。
 
-模型工具 preset_manager 的 get 返回配置、revision 和完整 roster；set 原子提交完整五字段 policy 和 expectedRevision，写入前请求审批。面板和工具都使用 DSH settings 服务的同一验证、持久化和版本检查路径。该工具不会更改 preset 默认值或定义。
+插件不注册模型工具，也不提供宿主侧管理服务；配置只通过 DSH Settings 表单和上述面板完成。该面板不会更改 preset 默认值或定义。
 
 ## 实现边界
 
