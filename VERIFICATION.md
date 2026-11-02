@@ -17,9 +17,13 @@
 - `npm pack --dry-run` 使用工作区内 npm cache：版本 0.2.0，22 个文件，`index.js` 887 B，分发包不再包含工具实现。
 - `node --check index.js` 与 `node --check client.js` 通过。
 
+### 安装
+
+2026-11-02 已用 rsync 将本仓库的 0.2.0 文件同步到 `/home/andyk/.dsh-local-plugins/dsh-preset-manager`，保留该目录的 `node_modules`，没有复制 `.git` 和 `.cache`。安装副本的 `package.json` 为 0.2.0，`index.js` 的 `inject` 为 `['settings']`，不再包含 `preset_manager`；同步的变更文件与仓库一致。按用户要求没有重新加载、重装或重启 DSH。
+
 ### 未完成
 
-本次没有同步或重装 `/home/andyk/.dsh-local-plugins/dsh-preset-manager`。该安装副本仍是旧版，`index.js` 的 `inject` 仍包含 `agentPresets`、`tools`、`approval`，因此当前运行中的 DSH 仍会暴露 `preset_manager`。要让工具从现有 GUI 消失，需要把本仓库同步到安装目录并重新加载/重装插件，或重启 DSH；本次未执行。当前 profile 的浏览器面板行为未在真实 GUI 中重新验收。历史记录中出现的 `preset_manager` 描述的是移除前的版本。
+当前运行进程仍使用重载前加载的旧版 Host 代码，所以现有 GUI 里的 `preset_manager` 会在下次重载/重启后消失；本次没有验证这一运行时变化。当前 profile 的浏览器面板行为未在真实 GUI 中重新验收。历史记录中出现的 `preset_manager` 描述的是移除前的版本。
 
 ## 0.1.2 — 2026-10-26
 
