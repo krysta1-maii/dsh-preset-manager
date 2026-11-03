@@ -4,8 +4,8 @@
   "tag": "dsh-v0.2.1-rc.2",
   "commit": "687f282e8625c6b8d11ff58211a90524be2e4317",
   "source": "https://github.com/deepseek-ai/deepseek-harness/tree/687f282e8625c6b8d11ff58211a90524be2e4317",
-  "status": "candidate-targeted-review",
-  "authority": "Installed 0.2.1-rc.2 declarations and artifacts plus live Cordis Inspect; 0.2.2-alpha.3 fixed-commit source review; dsh-dev-docs default rc.1 is not used as API authority",
+  "status": "installed-target-review",
+  "authority": "Installed 0.2.1-rc.2 declarations and artifacts plus live Cordis Inspect; 0.2.2-alpha.3 fixed-commit source review and 0.3.0 installation in profile web; dsh-dev-docs default rc.1 is not used as API authority",
   "surfaces": [
     "conversation.hero.agentPreset",
     "plugins.bundle.config#dsh-preset-manager"
@@ -23,12 +23,12 @@
       "tag": "dsh-v0.2.2-alpha.3",
       "commit": "05b1cae8db6e674c5685101494d4eec24652424a",
       "source": "https://github.com/deepseek-ai/deepseek-harness/tree/05b1cae8db6e674c5685101494d4eec24652424a",
-      "scope": "Fixed-commit source review of the hero preset menu, slot registry, config forms, client manifest and locale metadata; semver admission check; no installed-target or browser acceptance."
+      "scope": "Fixed-commit source review of the hero preset menu, slot registry, config forms, client manifest and locale metadata; semver admission check; 0.3.0 installed in profile web with the Host row and Client slot registrations active; no browser interaction or visual acceptance."
     }
   ],
   "limitations": [
     "The range admits all 0.2.1 and 0.2.2 prereleases and finals; only 0.2.1-rc.2, 0.2.1-rc.3 and 0.2.2-alpha.3 were reviewed. Other versions have not been individually verified.",
-    "0.2.2-alpha.3 was source-reviewed only; no installation or browser acceptance was performed.",
+    "0.2.2-alpha.3 was source-reviewed and 0.3.0 was installed in profile web; browser interaction and visual acceptance were not performed.",
     "Presets settings-page integration is paused; stored settingsOrder and hiddenSettings remain inactive."
   ]
 }

@@ -33,13 +33,34 @@
 - `npm run check`：构建、Host/Client 语法检查通过，**31/31 测试通过**。新增测试覆盖 `gateway/invocation-unavailable` 空 roster 和兼容范围一致性。
 - `node --check index.js` 与 `node --check client.js` 通过。
 - `git diff --check` 通过。
-- 工作区之外没有同步或安装。本次没有在 0.2.2-alpha.3 上安装，也没有刷新 GUI、做浏览器交互或真实模型请求。
+- 安装前的检查全部在工作区完成；实际安装与运行时状态见下节。
+
+### 安装（2026-11-03）
+
+运行中的 DSH 为 0.2.2-alpha.3，profile `web`，插件依赖仍是 `link:/home/andyk/.dsh-local-plugins/dsh-preset-manager`。安装前该目录是 0.2.0，管理器把它列为 `enabled: true`，同时带 `error.code: incompatible-version`（`engines.dsh` 为 `>=0.2.1-0 <0.2.2-0`，不含 0.2.2-alpha.3），rows 为空，Host 与 Client 都没有加载。
+
+执行步骤：
+
+1. 用 `tar` 备份旧副本到 `~/.dsh-local-plugins/backups/dsh-preset-manager-0.2.0-20261103T150452Z.tgz`，不含 `node_modules` 和 `.git`。
+2. 用 `rsync -a --delete` 把工作区的 0.3.0 文件同步到安装目录，保留该目录的 `node_modules`，排除 `.git` 和 `.cache`。
+3. 用 `plugin_manager` 的 `set_bundle`（`dsh-preset-manager`，`enabled: true`）重新读取 `package.json` 并通过兼容判定，没有卸载依赖，也没有改动 profile 的依赖与 bundle 选择顺序。
+
+结果核对：
+
+- 安装副本的 `package.json` 为 0.3.0；`client.js` 与工作区文件的 sha256 相同（`75a59eca…`）；除 `node_modules`、`.git`、`.cache` 外，`diff -rq` 无差异。
+- `set_bundle` 返回 `application: applied`、`warnings: []`、`changed: false`。兼容判定读取安装副本的新 `engines`；0.2.0 的旧范围在运行中已被拒绝，范围更新是这次能够加载的前提。
+- Host Config 中 `include:dsh-preset-manager` 存在，状态为 `schema`，`packageDir` 解析到 profile 里的安装链接；`list_plugins` 中该行 `enabled: true`、`fiberPhase: active`。
+- Client Inspect：`plugins.bundle.config` 的 key `dsh-preset-manager` 为 active；`conversation.hero.agentPreset` 上 priority -10 的包装注册为 active，priority 0 的原生注册为 inactive。安装前只有原生 priority 0 一项，因此这说明已连接的页面执行了新的 `client.js` 注册。
+- profile 的 `cordis.patch.yml` 未改，策略配置保留：`globalOrder` 8 项、`newSessionOrder` 8 项、`hiddenNewSession` 4 项，`settingsOrder` 与 `hiddenSettings` 为空。
+- 本次没有重启 DSH，也没有启动替代 Web 服务。
 
 ### 未完成与限制
 
-- 0.2.2-alpha.3 只做了固定提交的源码核对，没有目标版本运行结果。
+- 没有点击真实 GUI、刷新页面、截图或执行保存/恢复操作；面板视觉、保存、revision 冲突和全部隐藏时禁用菜单等交互未在本轮验收。
+- 没有真实模型请求。
+- 0.3.0 新增的 `gateway/invocation-unavailable` 空 roster 处理只有单元测试覆盖，没有在真实页面触发。
 - 原生元素结构仍是精确版本适配，不是跨版本稳定 API；0.2.2 其他版本没有逐一验证。
-- 本地安装目录保持原样，没有执行 rsync、安装、重装或重启 DSH；当前 GUI 仍运行已安装的旧版本。
+- 已连接页面是否显示新面板取决于客户端重载；如果页面仍是旧内容，需要刷新现有 GUI。
 
 ## 0.2.0 — 2026-11-02 移除模型工具
 
