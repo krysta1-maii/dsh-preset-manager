@@ -137,6 +137,23 @@ test('retained unavailable IDs are reported only after the roster loads', async 
   }
 });
 
+test('an absent agent-preset registry renders an empty roster instead of an error', async () => {
+  const env = environment('en', { list: async () => ({
+    ok: false, error: { code: 'gateway/invocation-unavailable', message: 'agent presets unavailable' },
+  }) });
+  const Manager = env.slots.entries('plugins.bundle.config')[0].component;
+  let renderer;
+  try {
+    await act(async () => { renderer = TestRenderer.create(React.createElement(Manager, { view: 'page' })); });
+    const text = JSON.stringify(renderer.toJSON());
+    assert.ok(text.includes('No matching presets'));
+    assert.ok(!text.includes('agent presets unavailable'));
+  } finally {
+    if (renderer) act(() => renderer.unmount());
+    env.dispose();
+  }
+});
+
 test('saving and resetting New chat preserve paused settings policy', async () => {
   const env = environment();
   const Manager = env.slots.entries('plugins.bundle.config')[0].component;

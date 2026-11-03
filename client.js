@@ -210,7 +210,7 @@ const TEXT = {
     changed: '配置已在别处更新。当前编辑仍保留；保存会检查版本，避免覆盖他人的修改。',
     notes: '说明',
     hideNote: '隐藏只影响新对话的候选列表，不是权限限制：当前或默认预设仍可使用，会话标题仍显示真实预设。DSH 的“编程工具”开关仍然生效。',
-    settingsPaused: '为避免 DSH 0.2.1-rc.2 出现重复导航，预设页面适配已停用。该页面使用原生显示和顺序；已有的页面隐藏、排序配置保留，但暂不生效。',
+    settingsPaused: '预设页面适配已停用，以避免 DSH 设置导航出现重复入口。该页面使用原生显示和顺序；已有的页面隐藏、排序配置保留，但暂不生效。',
     dormant: '配置中保留了当前未安装的预设 ID，重新安装后仍会沿用设置。',
   },
   en: {
@@ -232,7 +232,7 @@ const TEXT = {
     changed: 'Settings changed elsewhere. Your draft is preserved; saving checks the revision to avoid overwriting newer edits.',
     notes: 'Notes',
     hideNote: 'Hiding only filters New chat candidates and is not an access restriction. The current or default preset remains usable and session labels stay accurate. The DSH Coding Tools preference still applies.',
-    settingsPaused: 'Presets page integration is paused to avoid duplicate navigation in DSH 0.2.1-rc.2. That page uses its native visibility and order. Existing page visibility and order settings are retained but inactive.',
+    settingsPaused: 'Presets page integration is paused to avoid duplicate entries in DSH settings navigation. That page uses its native visibility and order. Existing page visibility and order settings are retained but inactive.',
     dormant: 'Settings include IDs not currently installed. Their preferences are retained for reinstallation.',
   },
 };
@@ -394,7 +394,10 @@ function apply(ctx) {
       const generation=++request.current; setLoading(true);setListError('');
       try { const result=await ctx.remote.agentPresets.list();
         if(!mounted.current || generation!==request.current)return;
-        if(!result.ok)throw new Error(result.error.message);
+        if(!result.ok){
+          if(result.error.code==='gateway/invocation-unavailable'){setRows([]);return;}
+          throw new Error(result.error.message);
+        }
         setRows(result.value.presets);
       } catch(err){if(mounted.current && generation===request.current)setListError(String(err.message ?? err));}
       finally {if(mounted.current && generation===request.current)setLoading(false);}

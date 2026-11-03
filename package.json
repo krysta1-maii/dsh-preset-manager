@@ -1,11 +1,11 @@
 {
   "name": "dsh-preset-manager",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Configure preset visibility and display order in DSH.",
   "type": "module",
   "license": "MIT",
   "engines": {
-    "dsh": ">=0.2.1-0 <0.2.2-0"
+    "dsh": ">=0.2.1-0 <0.2.3-0"
   },
   "exports": {
     ".": "./index.js",

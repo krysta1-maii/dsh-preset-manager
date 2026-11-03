@@ -1,5 +1,46 @@
 # 验证记录
 
+## 0.3.0 — 2026-11-03 扩展 DSH 0.2.2 兼容范围
+
+### 升版与范围
+
+插件版本从 0.2.0 升至 0.3.0，`package.json` 与 `package-lock.json` 的项目版本已同步。`engines.dsh` 从 `>=0.2.1-0 <0.2.2-0` 扩为 `>=0.2.1-0 <0.2.3-0`，覆盖 DSH 0.2.1 与 0.2.2 的预发布版及正式版。实现基线仍为 0.2.1-rc.2；本次新增目标是 0.2.2-alpha.3（tag `dsh-v0.2.2-alpha.3`，commit `05b1cae8db6e674c5685101494d4eec24652424a`）。
+
+### 源码核对
+
+按固定 Git 对象读取 0.2.2-alpha.3，不采用工作树 HEAD。用 semver 7.8.5 以 `includePrerelease: true` 计算：扩范围前 `0.2.2-alpha.3` 不满足旧范围，扩范围后满足新范围。DSH 的判定先读插件自己的 `engines.dsh`，因此范围更新是准入的必要条件。
+
+逐项核对结果：
+
+- 槽位注册 API 与 0.2.1-rc.2 相比未改；`entries`、`inject`、`register`、`subscribe` 语义一致。
+- `conversation.hero.agentPreset` 槽位声明未变；`AgentPresetSeat.tsx` 和 `ConversationContent.tsx` 未变；原生 Menu 的 `items`、`selectedId`、`onSelect`、`anchor` 结构仍能被适配层识别。
+- 配置表单 API 未变；`getSnapshot`、`subscribe`、`mutate(ops, revision)`、`status`、`writable`、`revision` 仍可用。
+- Host `settings.configure` 在 0.2.2-alpha.3 改为用 `owner.ctx.fiber` 取 fiber；Cordis 的 Fiber 构造保证 `fiber.ctx.fiber === fiber`，项目传入的 `ctx.fiber` 仍指向同一个实例，因此 Host 不需要改。
+- 目标 vendor 的 schemastery 源码与本项目安装的 3.18.5 源码逐字节相同，只有版本字符串不同；volatile schema 的序列化和校验格式不变。
+- 客户端 manifest 仍接受字符串形式的 `./client` 导出；`platform`、`immediately` 和三个 `inject` 包名有效；ModuleLoader 的 `load({ id, factory })` 格式未变，React 仍在基线模块表。
+- locale 注册的三参数单语言重载仍保留；插件只提供 zh/en，其他语言按回退链显示英文，不是加载错误。
+- `plugins.bundle.config` 仍是按 bundle 包名 keyed 的槽位；`remote.agentPresets.list` 的 roster 结构未变。
+- 设置导航仍按 `slots.entries` 全量投影，重复入口问题未修；插件继续暂停设置页适配，`settingsOrder` 和 `hiddenSettings` 仍不生效。
+
+### 代码调整
+
+- “预设页面适配已停用”的中英文说明改为版本中性表述，去掉对 0.2.1-rc.2 的硬编码；`client.js` 已由 `npm run build` 重新生成。
+- 管理面板在 `agentPresets.list()` 返回 `gateway/invocation-unavailable` 时按空 roster 处理；其他错误仍显示在列表内并允许重试。
+- 适配逻辑、Host `apply`、策略函数和 bundle patch 未改。
+
+### 本地检查
+
+- `npm run check`：构建、Host/Client 语法检查通过，**31/31 测试通过**。新增测试覆盖 `gateway/invocation-unavailable` 空 roster 和兼容范围一致性。
+- `node --check index.js` 与 `node --check client.js` 通过。
+- `git diff --check` 通过。
+- 工作区之外没有同步或安装。本次没有在 0.2.2-alpha.3 上安装，也没有刷新 GUI、做浏览器交互或真实模型请求。
+
+### 未完成与限制
+
+- 0.2.2-alpha.3 只做了固定提交的源码核对，没有目标版本运行结果。
+- 原生元素结构仍是精确版本适配，不是跨版本稳定 API；0.2.2 其他版本没有逐一验证。
+- 本地安装目录保持原样，没有执行 rsync、安装、重装或重启 DSH；当前 GUI 仍运行已安装的旧版本。
+
 ## 0.2.0 — 2026-11-02 移除模型工具
 
 ### 升版
